@@ -58,6 +58,7 @@ hass = HassApi(hassUrl, hassRestToken)
 DesiredFps = 42
 DefaultFps = 42 # Original constants trained for 42 FPS
 MicroSecondsBetweenFrames = (1 / DesiredFps) * 1000000
+frameSkipThreshold = 5 # Number of frames we can skip without seeing wand and still continue
 
 TrainingResolution = 50
 TrainingNumPixels = TrainingResolution * TrainingResolution
@@ -122,35 +123,6 @@ frameThresh = None
 findNewWands = True
 trackedPoints = None
 wandTracks = []
-
-def ClassifyImage(img):
-    """
-    Classify input image based on previously trained k-Nearest Neighbor Algorithm
-    """
-    print("Classifying: %s", img.shape)
-
-    global knn, nameLookup, args
-
-    if (img.size  <= 0):
-        return "Error"
-
-    size = (TrainingResolution, TrainingResolution)
-    test_gray = cv2.resize(img,size,interpolation=cv2.INTER_LINEAR)
-    
-    imgArr = np.array(test_gray).astype(np.float32)
-    sample = imgArr.reshape(-1, TrainingNumPixels).astype(np.float32)
-    ret, result, neighbours, dist = knn.findNearest(sample,k=5)
-    print(ret, result, neighbours, dist)
-
-    if IsTraining:
-        filename = "char" + str(time.time()) + nameLookup[ret] + ".png"
-        cv2.imwrite(join(TrainingFolderName, filename), test_gray)
-
-    if nameLookup[ret] is not None:
-        print("Match: " + nameLookup[ret])
-        return nameLookup[ret]
-    else:
-        return "error"
 
 def PerformSpell(spell):
     """
@@ -218,9 +190,6 @@ def CheckForPattern(wandTracks, exampleFrame):
             cnt = contours[0]
             x,y,w,h = cv2.boundingRect(cnt)
             crop = wand_path_frame[y-10:y+h+10,x-30:x+w+30]
-            #DEBUG
-            print("Wand path frame: %s", wand_path_frame.shape)
-            # result = ClassifyImage(crop)
             result = classifyImage(wand_path_frame)
             cv2.putText(wand_path_frame, result, (0,50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255))
 
@@ -272,7 +241,7 @@ def CalculateThreshold():
     global frame, frame_no_background, frameThresh, IsNewFrame, IsNewFrameNoBackground, IsNewFrameThreshold
 
     t = threading.currentThread()
-    thresholdValue = 240
+    thresholdValue = 230
     while getattr(t, "do_run", True):
         if (IsRemoveBackground and IsNewFrameNoBackground) or (not IsRemoveBackground and IsNewFrame):
             if IsRemoveBackground:
@@ -296,10 +265,11 @@ def ProcessData():
     """
     Thread for processing final frame
     """
-    global frameThresh, IsNewFrameThreshold, findNewWands, wandTracks, outputFrameCount
+    global frameThresh, IsNewFrameThreshold, findNewWands, wandTracks, outputFrameCount, frameSkipCounter
 
     oldFrameThresh = None
     trackedPoints = None
+    frameSkipCounter = 0
     t = threading.currentThread()
 
     while getattr(t, "do_run", True):
@@ -335,12 +305,15 @@ def ProcessData():
                     trackedPoints = good_new.copy().reshape(-1,1,2)
            
                     wandTracks = CheckForPattern(wandTracks, localFrameThresh)
-           
+                elif frameSkipCounter < frameSkipThreshold:
+                    frameSkipCounter = frameSkipCounter + 1
+                    continue
                 else:
                     # No Points were tracked, check for a pattern and start searching for wands again
                     #wandTracks = CheckForPattern(wandTracks, localFrameThresh)
                     wandTracks = []
                     findNewWands = True
+                    frameSkipCounter = 0
             
             # Store Previous Threshold Frame
             oldFrameThresh = localFrameThresh
