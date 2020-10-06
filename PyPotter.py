@@ -21,6 +21,7 @@ from threading import Thread
 from statistics import mean 
 from CountsPerSec import CountsPerSec
 from HassApi import HassApi
+from classify import classifyImage
 
 # Check for required number of arguments
 if (len(sys.argv) < 4):
@@ -122,51 +123,12 @@ findNewWands = True
 trackedPoints = None
 wandTracks = []
 
-def InitClassificationAlgo() :
-    """
-    Create and Train k-Nearest Neighbor Algorithm
-    """
-    global knn, nameLookup
-    labelNames = []
-    labelIndexes = []
-    trainingSet = []
-    numPics = 0
-    dirCount = 0
-    scriptpath = os.path.realpath(__file__)
-    trainingDirectory = join(os.path.dirname(scriptpath), TrainingFolderName)
-
-    # Every folder in the training directory contains a set of images corresponding to a single spell.
-    # Loop through all folders to train all spells.
-    for d in listdir(trainingDirectory):
-        if isdir(join(trainingDirectory, d)):
-            nameLookup[dirCount] = d
-            dirCount = dirCount + 1
-            for f in listdir(join(trainingDirectory,d)):
-                if isfile(join(trainingDirectory,d,f)):
-                    labelNames.append(d)
-                    labelIndexes.append(dirCount-1)
-                    trainingSet.append(join(trainingDirectory,d,f));
-                    numPics = numPics + 1
-
-    print ("Trained Spells: ")
-    print (nameLookup)
-
-    samples = []
-    for i in range(0, numPics):
-        img = cv2.imread(trainingSet[i])
-        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-        samples.append(gray);
-        npArray = np.array(samples)
-        shapedArray = npArray.reshape(-1,TrainingNumPixels).astype(np.float32);
-
-    # Create KNN and Train
-    knn = cv2.ml.KNearest_create()
-    knn.train(shapedArray, cv2.ml.ROW_SAMPLE, np.array(labelIndexes))
-
 def ClassifyImage(img):
     """
     Classify input image based on previously trained k-Nearest Neighbor Algorithm
     """
+    print("Classifying: %s", img.shape)
+
     global knn, nameLookup, args
 
     if (img.size  <= 0):
@@ -194,6 +156,8 @@ def PerformSpell(spell):
     """
     Make the desired Home Assistant REST API call based on the spell
     """
+    return # Temporarily disable
+
     if (spell=="incendio"):
         hass.TriggerAutomation("automation.wand_incendio")
     elif (spell=="aguamenti"):
@@ -214,6 +178,9 @@ def CheckForPattern(wandTracks, exampleFrame):
     Check the given wandTracks to see if is is complete, and if it matches a trained spell
     """
     global find_new_wands, LastSpell
+
+    #Debug
+    # print("example frame: %s", exampleFrame.shape)
 
     if (wandTracks == None or len(wandTracks) == 0):
         return
@@ -251,7 +218,10 @@ def CheckForPattern(wandTracks, exampleFrame):
             cnt = contours[0]
             x,y,w,h = cv2.boundingRect(cnt)
             crop = wand_path_frame[y-10:y+h+10,x-30:x+w+30]
-            result = ClassifyImage(crop);
+            #DEBUG
+            print("Wand path frame: %s", wand_path_frame.shape)
+            # result = ClassifyImage(crop)
+            result = classifyImage(wand_path_frame)
             cv2.putText(wand_path_frame, result, (0,50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255))
 
             print("Result: ", result, " Most Recent avg: ", avgMostRecentDistances, " Length Distances: ", len(distances), " Sum Distances: ", sumDistances)
@@ -391,9 +361,6 @@ timeLastPrintedFps = datetime.datetime.now()
 
 inputFrameCount = 0
 outputFrameCount = 0
-
-# Initialize and traing the spell classification algorithm
-InitClassificationAlgo()
 
 # Start thread to remove frame background
 if IsRemoveBackground:

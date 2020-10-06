@@ -335,3 +335,4 @@ ASALocalRun/
 
 # Visual Studio Python Project
 .pyproj
+.vscode/
