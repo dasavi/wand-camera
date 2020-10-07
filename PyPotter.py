@@ -22,6 +22,7 @@ from statistics import mean
 from CountsPerSec import CountsPerSec
 from HassApi import HassApi
 from classify import classifyImage
+from ImageUtils import dilateImage, showBrightSpot
 
 # Check for required number of arguments
 if (len(sys.argv) < 4):
@@ -222,7 +223,7 @@ def RemoveBackground():
             IsNewFrame = False
 
             frameCopy = frame.copy()
-
+            
             # Subtract Background
             fgmask = fgbg.apply(frameCopy, learningRate=0.001)
             frame_no_background = cv2.bitwise_and(frameCopy, frameCopy, mask = fgmask)
@@ -241,18 +242,18 @@ def CalculateThreshold():
     global frame, frame_no_background, frameThresh, IsNewFrame, IsNewFrameNoBackground, IsNewFrameThreshold
 
     t = threading.currentThread()
-    thresholdValue = 230
+    
     while getattr(t, "do_run", True):
         if (IsRemoveBackground and IsNewFrameNoBackground) or (not IsRemoveBackground and IsNewFrame):
             if IsRemoveBackground:
                 IsNewFrameNoBackground = False
-                frame_gray = cv2.cvtColor(frame_no_background, cv2.COLOR_BGR2GRAY)
+                process_frame = frame_no_background
 
             if not IsRemoveBackground:
                 IsNewFrame = False
-                frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                process_frame = frame
 
-            ret, frameThresh = cv2.threshold(frame_gray, thresholdValue, 255, cv2.THRESH_BINARY);
+            frameThresh = showBrightSpot(process_frame)
 
             IsNewFrameThreshold = True
             if (IsShowThreshold):
