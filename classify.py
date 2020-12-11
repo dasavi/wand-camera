@@ -13,24 +13,20 @@ import math
 import os
 from os import listdir
 from os.path import isfile, join, isdir
+from config import CLASS_MAPPING
+from config import TRAINING_IMAGE_SIZE_X
+from config import TRAINING_IMAGE_SIZE_Y
 plt.style.use('fivethirtyeight')
 
 TEST_DIRECTORY = "./images/test/"
 TEST_FILE = "draw.png"
-
-CLASS_MAPPING = {
-    0: "Mistake",
-    1: "Aguamenti",
-    2: "Tarantallegra",
-    3: "Incendio"
-}
 
 def processImageData(img):
     from keras.preprocessing.image import load_img
     from keras.preprocessing.image import img_to_array
 
     # resize image
-    img = cv2.resize(img, (50, 50))
+    img = cv2.resize(img, (TRAINING_IMAGE_SIZE_X, TRAINING_IMAGE_SIZE_Y))
 
     # # convert to data array
     img_array = img_to_array(img)
@@ -42,21 +38,23 @@ def processImageData(img):
 
 # def blackWhiteToRGB(img_array):
 #     for x in img_array.shape
-def predictionToClassification(predictionArr):
+def classify(predictionArr):
     
     result = "No spell found"
-    currentConfidence = predictionArr[0]
+    currentConfidence = 0
+    print("\n=========")
     for i, val in enumerate(predictionArr):
+        print(str(CLASS_MAPPING[i]) + ": " + str(val))
         if val > currentConfidence:
             currentConfidence = val
             result = CLASS_MAPPING[i]
+    print("=========\n")
 
 
-    print("\n=========")
+    print("\n====RESULT=====")
     print(result)
     
-    print(predictionArr)
-    print("=========\n")
+    print("===============\n")
     return result
 
 def classifyImage(img):
@@ -67,7 +65,7 @@ def classifyImage(img):
     img = processImageData(img)
 
     predictions = model.predict(np.array( [img] ))
-    result = predictionToClassification(predictions[0])
+    result = classify(predictions[0])
     return result
 
 
