@@ -30,7 +30,7 @@ if (len(sys.argv) < 4):
     sys.exit(0)
 
 # Parse Required Arguments
-videoSource = 0
+videoSource = 0 #default video source
 hassUrl = sys.argv[2]
 hassRestToken = sys.argv[3]
 

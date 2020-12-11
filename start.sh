@@ -1,1 +1,1 @@
-python ./PyPotter.py http://192.168.86.42:8080/?action=stream HASS_URL API_TOKEN
+python3 ./PyPotter.py http://192.168.86.42:8080/?action=stream HASS_URL API_TOKEN
