@@ -181,8 +181,10 @@ def CheckForPattern(wandTracks, exampleFrame):
     mostRecentDistances = distances[-NumDistancesToAverage:]
     avgMostRecentDistances = mean(mostRecentDistances)
     sumDistances = sum(distances)
-
-    contours, hierarchy = cv2.findContours(wand_path_frame,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    if cv2.__version__ >= "4.0":
+        contours, hierarchy = cv2.findContours(wand_path_frame,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    else:
+        contours, hierarchy, unusedVar = cv2.findContours(wand_path_frame,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
     # Determine if wand stopped moving by looking at recent movement (avgMostRecentDistances), and check the length of distances to make sure the spell is reasonably long
     if (avgMostRecentDistances < SpellEndMovement and len(distances) > MinSpellLength):
