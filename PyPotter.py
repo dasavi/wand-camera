@@ -22,7 +22,8 @@ from statistics import mean
 from CountsPerSec import CountsPerSec
 from HassApi import HassApi
 from classify import classifyImage
-from ImageUtils import dilateImage, showBrightSpot
+from ImageUtils import dilateImage, showBrightSpot, saveImage
+from config import CAPTURE_MODE
 
 # Check for required number of arguments
 if (len(sys.argv) < 4):
@@ -30,7 +31,7 @@ if (len(sys.argv) < 4):
     sys.exit(0)
 
 # Parse Required Arguments
-videoSource = 0 #default video source
+videoSource = "http://192.168.86.167:8080/?action=stream" #0 #default video source
 hassUrl = sys.argv[2]
 hassRestToken = sys.argv[3]
 
@@ -129,6 +130,8 @@ def PerformSpell(spell):
     """
     Make the desired Home Assistant REST API call based on the spell
     """
+    if(spell == "circle"):
+        print("ACTIVATE SPELL")
     return # Temporarily disable
 
     if (spell=="incendio"):
@@ -145,6 +148,8 @@ def PerformSpell(spell):
         hass.TriggerAutomation("automation.wand_revelio")
     elif (spell == "tarantallegra"):
         hass.TriggerAutomation("automation.wand_tarantallegra")
+    elif(spell == "circle"):
+        print("ACTIVATE SPELL")
 
 def CheckForPattern(wandTracks, exampleFrame):
     """
@@ -194,10 +199,14 @@ def CheckForPattern(wandTracks, exampleFrame):
             x,y,w,h = cv2.boundingRect(cnt)
             crop = wand_path_frame[y-10:y+h+10,x-30:x+w+30]
             result = classifyImage(wand_path_frame)
-            cv2.putText(wand_path_frame, result, (0,50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255))
+            if CAPTURE_MODE:
+                saveImage(wand_path_frame)
 
+            cv2.putText(wand_path_frame, result, (0,50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255))
             print("Result: ", result, " Most Recent avg: ", avgMostRecentDistances, " Length Distances: ", len(distances), " Sum Distances: ", sumDistances)
             print("")
+
+      
 
             PerformSpell(result)
             LastSpell = result

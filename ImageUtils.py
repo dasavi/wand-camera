@@ -1,11 +1,18 @@
 import cv2
+import time
 import numpy as np
 from GlobalConstants import IMAGE_HEIGHT, IMAGE_WIDTH
+from config import CAPTURE_FOLDER
 
 THRESHOLD_VALUE = 200
 THRESHOLD_DELTA = 20
 
 kernel = np.ones((10,10),np.uint8)
+
+def saveImage(img):
+    filename = "char" + str(time.time()) + "-capture.png"
+    cv2.imwrite(CAPTURE_FOLDER + "/" + filename, img)
+    print("===IMAGE SAVED===")
 
 def dilateImage(img):
     return cv2.dilate(img, kernel, iterations = 1)
