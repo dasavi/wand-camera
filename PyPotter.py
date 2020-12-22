@@ -24,6 +24,7 @@ from HassApi import HassApi
 from classify import classifyImage
 from ImageUtils import dilateImage, showBrightSpot, saveImage
 from config import CAPTURE_MODE
+from SpellUtils import PerformSpell
 
 # Check for required number of arguments
 if (len(sys.argv) < 4):
@@ -125,31 +126,6 @@ frameThresh = None
 findNewWands = True
 trackedPoints = None
 wandTracks = []
-
-def PerformSpell(spell):
-    """
-    Make the desired Home Assistant REST API call based on the spell
-    """
-    if(spell == "circle"):
-        print("ACTIVATE SPELL")
-    return # Temporarily disable
-
-    if (spell=="incendio"):
-        hass.TriggerAutomation("automation.wand_incendio")
-    elif (spell=="aguamenti"):
-        hass.TriggerAutomation("automation.wand_aguamenti")
-    elif (spell=="alohomora"):
-        hass.TriggerAutomation("automation.wand_alohomora")
-    elif (spell=="silencio"):
-        hass.TriggerAutomation("automation.wand_silencio")
-    elif (spell=="specialis_revelio"):
-        hass.TriggerAutomation("automation.wand_specialis_revelio")
-    elif (spell=="revelio"):
-        hass.TriggerAutomation("automation.wand_revelio")
-    elif (spell == "tarantallegra"):
-        hass.TriggerAutomation("automation.wand_tarantallegra")
-    elif(spell == "circle"):
-        print("ACTIVATE SPELL")
 
 def CheckForPattern(wandTracks, exampleFrame):
     """
