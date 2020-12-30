@@ -1,6 +1,7 @@
 ASSISTANT_USER="Avi"
-ASSISTANT_URL="http://172.20.64.1:3000/assistant"
-CAST_URL="http://172.20.64.1:3000/cast/"
+ASSISTANT_RELAY_HOST="http://ar.local:3000"
+ASSISTANT_URL=ASSISTANT_RELAY_HOST + "/assistant"
+CAST_URL=ASSISTANT_RELAY_HOST + "/cast/"
 CAST_DEVICE="Study speaker"
 MUSIC_URL="https://www.youtube.com/watch?v=u-TuSh68y08"
 TRAINING_IMAGE_SIZE_X=50
