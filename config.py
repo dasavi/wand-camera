@@ -6,7 +6,8 @@ CAST_DEVICE="Study speaker"
 MUSIC_URL="https://www.youtube.com/watch?v=u-TuSh68y08"
 TRAINING_IMAGE_SIZE_X=50
 TRAINING_IMAGE_SIZE_Y=50
-CAPTURE_MODE=True
+CAPTURE_MODE=False
+TRAINING_MODE=False
 CAPTURE_FOLDER="./images/captured"
 CLASS_MAPPING = {
     0: "mistakes",

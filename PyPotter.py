@@ -23,7 +23,7 @@ from CountsPerSec import CountsPerSec
 from HassApi import HassApi
 from classify import classifyImage
 from ImageUtils import dilateImage, showBrightSpot, saveImage
-from config import CAPTURE_MODE
+from config import CAPTURE_MODE, TRAINING_MODE
 from SpellUtils import PerformSpell
 
 # Check for required number of arguments
@@ -183,8 +183,11 @@ def CheckForPattern(wandTracks, exampleFrame):
             print("")
 
       
-
-            PerformSpell(result)
+            if not TRAINING_MODE:
+                PerformSpell(result)
+            else:
+                print("TRAINING MODE: Skipping action")
+                
             LastSpell = result
         find_new_wands = True
         wandTracks.clear()
