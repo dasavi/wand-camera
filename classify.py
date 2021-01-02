@@ -64,7 +64,7 @@ def classifyImage(img):
     # Get image array in proper format for prediction
     img = processImageData(img)
 
-    predictions = model.predict(np.array( [img] ))
+    predictions = model.predict(np.array( [img] ), batch_size=128)
     result = classify(predictions[0])
     return result
 
